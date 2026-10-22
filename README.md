@@ -4,7 +4,7 @@
 
 [Rubikc](https://rubikc.com) storefront redirect theme. Dawn stays in place for Shopify pages that have to keep working, and content browsing is sent to the Rubikc storefront with `window.location`.
 
-The storefront pages for account, cart, policies, gift cards, and the password page come from [Dawn](https://github.com/Shopify/dawn) 16.0.0.
+The storefront pages for account, policies, gift cards, and the password page come from [Dawn](https://github.com/Shopify/dawn) 16.0.0. The cart template is still Dawn, and `/cart` redirects to Rubikc.
 
 ## Setup
 
@@ -28,6 +28,7 @@ These templates redirect. The script is the first thing in the page, then the br
 - Blogs and articles
 - Search
 - Metaobjects
+- Cart (`/cart`, including localized paths such as `/en/cart`)
 - 404
 
 Product URLs that do not already have a hash open `#content-1` on the Rubikc storefront.
@@ -37,7 +38,7 @@ A hostname without `https://` is accepted, and `https://` is added. `http://` is
 ## What stays on this theme
 
 - Customer account, including the account menu
-- Cart
+- Cart changes (`/cart/add`, `/cart/change`, `/cart/update`)
 - Checkout, which Shopify hosts outside the theme
 - Policy pages
 - Gift cards
@@ -47,7 +48,7 @@ A hostname without `https://` is accepted, and `https://` is added. `http://` is
 
 Shopify discount links still work. After Shopify sets the `discount_code` cookie, the redirect adds it as a `discount` query parameter and clears the cookie.
 
-The theme editor and Shopify theme preview do not redirect. Content pages there show the text `Rubikc Redirect: <URL>` instead of this theme. Account, cart, and the other pages that stay here still render, so those sections stay editable.
+The theme editor and Shopify theme preview do not redirect. Content pages, including `/cart`, show the text `Rubikc Redirect: <URL>` instead of this theme. Account and the other pages that stay here still render, so those sections stay editable. The cart template still renders with `?rubikc_stay_old=1`.
 
 ## Preview this theme
 
@@ -57,7 +58,7 @@ Add `?rubikc_stay_old=1` on the published theme to skip the redirect for the cur
 
 ## Dawn updates
 
-Account, cart, and the other pages that stay here come from Dawn. To bring in a newer Dawn, add an `upstream` remote for `https://github.com/Shopify/dawn.git` and merge `main`.
+Account and the other pages that stay here come from Dawn. The cart template remains for `?rubikc_stay_old=1`. To bring in a newer Dawn, add an `upstream` remote for `https://github.com/Shopify/dawn.git` and merge `main`.
 
 ## License
 

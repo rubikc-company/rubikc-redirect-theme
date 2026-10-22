@@ -59,12 +59,23 @@ test('accepts a hostname and a base path', () => {
   assert.equal(decision.url, 'https://an.customers.rubikc.com/preview/blogs/news/hello');
 });
 
+test('redirects the cart page and keeps the query string', () => {
+  assert.equal(
+    resolve({ pathname: '/cart', search: '?foo=1' }).url,
+    'https://an.customers.rubikc.com/cart?foo=1'
+  );
+  assert.equal(resolve({ pathname: '/en/cart' }).url, 'https://an.customers.rubikc.com/en/cart');
+  assert.equal(resolve({ pathname: '/fr-CA/cart/' }).url, 'https://an.customers.rubikc.com/fr-CA/cart/');
+});
+
 test('does not redirect essential Shopify routes', () => {
   for (const pathname of [
     '/account',
     '/account/orders/1',
     '/en/account/login',
-    '/cart',
+    '/cart/add',
+    '/cart/change',
+    '/cart/update',
     '/checkout',
     '/checkouts/cn/abc',
     '/policies/privacy-policy',

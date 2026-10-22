@@ -1,6 +1,6 @@
 {%- comment -%}
   Content pages redirect to the Rubikc storefront URL.
-  Account, cart, checkout, policies, gift cards, and Shopify checkpoints stay on this theme.
+  The cart page redirects too. Account, checkout, policies, gift cards, and Shopify checkpoints stay on this theme.
 {%- endcomment -%}
 
 {%- if part == 'style' -%}
@@ -38,11 +38,18 @@
       return parts.slice(index);
     }
 
+    function rubikcIsCartPage(pathname) {
+      var segments = rubikcPathSegments(pathname).filter(function (segment) {
+        return segment !== '';
+      });
+
+      return segments.length === 1 && segments[0] === 'cart';
+    }
+
     function rubikcIsEssentialPath(pathname) {
       var segment = rubikcPathSegments(pathname)[0] || '';
       var essential = {
         account: true,
-        cart: true,
         checkout: true,
         checkouts: true,
         challenge: true,
@@ -56,6 +63,10 @@
         policies: true,
         gift_cards: true
       };
+
+      if (segment === 'cart') {
+        return !rubikcIsCartPage(pathname);
+      }
 
       return !!essential[segment];
     }

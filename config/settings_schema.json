@@ -12,7 +12,7 @@
     "settings": [
       {
         "type": "paragraph",
-        "content": "[Rubikc](https://rubikc.com) replaces browsing for the home page, products, collections, pages, blogs, and search. Account, cart, checkout, policies, and gift cards stay on this theme. Leave the URL empty to turn the redirect off. https:// is added when it is missing."
+        "content": "[Rubikc](https://rubikc.com) replaces browsing for the home page, products, collections, pages, blogs, search, and cart. Account, checkout, policies, and gift cards stay on this theme. Leave the URL empty to turn the redirect off. https:// is added when it is missing."
       },
       {
         "type": "text",
