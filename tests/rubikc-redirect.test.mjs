@@ -89,7 +89,32 @@ test('does not redirect when the host already matches', () => {
 
 test('does not redirect in the theme editor or without a URL', () => {
   assert.equal(resolve({ designMode: true }).redirect, false);
+  assert.equal(resolve({ visualPreviewMode: true }).redirect, false);
   assert.equal(resolve({ redirectTarget: '  ' }).redirect, false);
+  assert.equal(resolve({ redirectTarget: '' }).redirect, false);
+});
+
+test('Shopify preview reports the target instead of redirecting', () => {
+  const decision = resolve({
+    search: '?preview_theme_id=99',
+    redirectTarget: 'an.customers.rubikc.com/preview/',
+    pathname: '/pages/about',
+  });
+
+  assert.equal(decision.redirect, false);
+  assert.equal(decision.preview, true);
+  assert.equal(decision.target, 'https://an.customers.rubikc.com/preview');
+});
+
+test('adds https when the scheme is missing and keeps an explicit http URL', () => {
+  assert.equal(
+    resolve({ redirectTarget: 'store.example.com' }).url,
+    'https://store.example.com/collections/all'
+  );
+  assert.equal(
+    resolve({ redirectTarget: 'http://store.example.com' }).url,
+    'http://store.example.com/collections/all'
+  );
 });
 
 test('forwards a Shopify discount cookie and strips the stay parameter', () => {
@@ -103,6 +128,18 @@ test('forwards a Shopify discount cookie and strips the stay parameter', () => {
   assert.equal(decision.clearStay, true);
   assert.equal(decision.clearDiscountCookie, true);
   assert.equal(decision.url, 'https://an.customers.rubikc.com/?discount=SAVE+10');
+});
+
+test('names the theme Rubikc Redirect and previews the target as text', () => {
+  const schema = fs.readFileSync(new URL('../config/settings_schema.json', import.meta.url), 'utf8');
+  const data = fs.readFileSync(new URL('../config/settings_data.json', import.meta.url), 'utf8');
+  const layout = fs.readFileSync(new URL('../layout/theme.liquid', import.meta.url), 'utf8');
+
+  assert.match(schema, /"theme_name": "Rubikc Redirect"/);
+  assert.equal(JSON.parse(data).current, 'Rubikc Redirect');
+  assert.match(layout, /<body>Rubikc Redirect: \{\{ rubikc_redirect_base \| escape \}\}<\/body>/);
+  assert.match(layout, /rubikc_redirect_target != blank/);
+  assert.match(layout, /unless rubikc_redirect_base contains '\:\/\/'/);
 });
 
 test('stays on this theme for the tab when requested', () => {
