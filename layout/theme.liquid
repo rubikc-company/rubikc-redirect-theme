@@ -1,7 +1,55 @@
+{%- comment -%}
+  Content templates redirect to the Rubikc storefront. Account, cart, policies, gift cards, and Shopify checkpoints stay here.
+{%- endcomment -%}
+{%- liquid
+  assign rubikc_redirect_types = '|index|product|collection|list-collections|page|blog|article|search|404|metaobject|'
+  assign rubikc_page_token = '|' | append: request.page_type | append: '|'
+  assign rubikc_redirect = false
+  if settings.redirect_url != blank and rubikc_redirect_types contains rubikc_page_token
+    unless request.design_mode
+      unless request.visual_preview_mode
+        assign rubikc_redirect = true
+      endunless
+    endunless
+  endif
+
+  if settings.redirect_url != blank
+    assign rubikc_redirect_base = settings.redirect_url | strip
+    assign rubikc_redirect_prefix = rubikc_redirect_base | slice: 0, 2
+    if rubikc_redirect_prefix == '//'
+      assign rubikc_redirect_base = 'https:' | append: rubikc_redirect_base
+    endif
+    unless rubikc_redirect_base contains '://'
+      assign rubikc_redirect_base = 'https://' | append: rubikc_redirect_base
+    endunless
+    assign rubikc_redirect_base = rubikc_redirect_base | split: '?' | first | split: '#' | first
+    assign rubikc_redirect_last = rubikc_redirect_base | slice: -1
+    if rubikc_redirect_last == '/'
+      assign rubikc_redirect_base = rubikc_redirect_base | remove_last: '/'
+    endif
+  endif
+
+  if rubikc_redirect
+    assign rubikc_noscript_url = rubikc_redirect_base | append: request.path
+    if request.page_type == 'product'
+      assign rubikc_noscript_url = rubikc_noscript_url | append: '#content-1'
+    endif
+  endif
+-%}
 <!doctype html>
-<html class="js" lang="{{ request.locale.iso_code }}">
+<html class="js{% if rubikc_redirect %} rubikc-redirecting{% endif %}" lang="{{ request.locale.iso_code }}">
   <head>
     <meta charset="utf-8">
+    {%- if rubikc_redirect -%}
+      {% render 'rubikc-redirect', part: 'style' %}
+      {% render 'rubikc-redirect', part: 'script' %}
+      <link rel="canonical" href="{{ rubikc_redirect_base | append: request.path | escape }}">
+      <title>{{ page_title | escape }}</title>
+      <noscript><meta http-equiv="refresh" content="0;url={{ rubikc_noscript_url | escape }}"></noscript>
+    </head>
+    <body></body>
+    </html>
+    {%- else -%}
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="theme-color" content="">
@@ -403,3 +451,4 @@
     {%- endif -%}
   </body>
 </html>
+    {%- endif -%}
