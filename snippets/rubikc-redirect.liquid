@@ -75,14 +75,50 @@
       return rubikcPathSegments(pathname)[0] === 'products';
     }
 
-    function rubikcResolveRedirect(input) {
-      var redirectTarget = String(input.redirectTarget || '').trim();
-      if (!redirectTarget || input.designMode) {
-        return { redirect: false };
+    function rubikcNormalizeTarget(redirectTarget) {
+      var target = String(redirectTarget || '').trim();
+      if (!target) return '';
+
+      if (target.indexOf('//') === 0) {
+        target = 'https:' + target;
+      } else if (!/^https?:\/\//i.test(target)) {
+        target = 'https://' + target;
       }
 
+      var targetUrl;
+      try {
+        targetUrl = new URL(target);
+      } catch (error) {
+        return '';
+      }
+
+      if (targetUrl.protocol !== 'http:' && targetUrl.protocol !== 'https:') return '';
+      if (!targetUrl.hostname) return '';
+
+      var basePath = targetUrl.pathname.replace(/\/$/, '');
+      if (basePath === '/') basePath = '';
+
+      return targetUrl.origin + basePath;
+    }
+
+    function rubikcResolveRedirect(input) {
+      var redirectBase = rubikcNormalizeTarget(input.redirectTarget);
       var search = input.search || '';
       var params = new URLSearchParams(search.charAt(0) === '?' ? search.slice(1) : search);
+      var shopifyPreview = !!(
+        input.designMode ||
+        input.visualPreviewMode ||
+        params.has('preview_theme_id')
+      );
+
+      if (!redirectBase || shopifyPreview) {
+        return {
+          redirect: false,
+          preview: shopifyPreview,
+          target: redirectBase
+        };
+      }
+
       var clearStay = false;
       var stayStored = !!input.stayStored;
 
@@ -101,23 +137,7 @@
         return { redirect: false, clearStay: clearStay };
       }
 
-      var target = redirectTarget;
-      if (target.indexOf('//') === 0) {
-        target = 'https:' + target;
-      } else if (!/^https?:\/\//i.test(target)) {
-        target = 'https://' + target;
-      }
-
-      var targetUrl;
-      try {
-        targetUrl = new URL(target);
-      } catch (error) {
-        return { redirect: false, clearStay: clearStay };
-      }
-
-      if (targetUrl.protocol !== 'http:' && targetUrl.protocol !== 'https:') {
-        return { redirect: false, clearStay: clearStay };
-      }
+      var targetUrl = new URL(redirectBase);
 
       if (String(input.hostname || '').toLowerCase() === targetUrl.hostname.toLowerCase()) {
         return { redirect: false, clearStay: clearStay };
@@ -174,6 +194,7 @@
           hostname: window.location.hostname,
           cookie: document.cookie,
           designMode: !!(window.Shopify && window.Shopify.designMode),
+          visualPreviewMode: !!(window.Shopify && window.Shopify.visualPreviewMode),
           stayStored: stayStored
         });
       } catch (error) {
@@ -185,6 +206,18 @@
         if (decision.clearStay) window.sessionStorage.removeItem('rubikc_stay_old');
         if (decision.storeStay) window.sessionStorage.setItem('rubikc_stay_old', '1');
       } catch (error) {}
+
+      if (decision.preview) {
+        var previewText = decision.target ? 'Rubikc Redirect: ' + decision.target : 'Rubikc Redirect';
+        var showPreview = function () {
+          document.title = previewText;
+          if (document.body) document.body.textContent = previewText;
+          reveal();
+        };
+        if (document.body) showPreview();
+        else document.addEventListener('DOMContentLoaded', showPreview);
+        return;
+      }
 
       if (!decision.redirect) {
         reveal();

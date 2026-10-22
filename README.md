@@ -1,4 +1,4 @@
-# Rubikc
+# Rubikc Redirect
 
 [Download rubikc.zip](https://github.com/rubikc-company/rubikc-redirect-theme/releases/latest/download/rubikc.zip)
 
@@ -11,11 +11,11 @@ The storefront pages for account, policies, gift cards, and the password page co
 1. [Download rubikc.zip](https://github.com/rubikc-company/rubikc-redirect-theme/releases/latest/download/rubikc.zip). Each merge to `main` publishes a new zip on [Releases](https://github.com/rubikc-company/rubikc-redirect-theme/releases/latest).
 2. In Shopify admin, open **Online Store -> Themes -> Add theme -> Upload zip file** and choose `rubikc.zip`.
 3. Open the theme editor.
-4. Go to **Theme settings -> Rubikc**.
-5. Set **Redirect URL** to the Rubikc storefront, for example `https://store.example.com`.
+4. Go to **Theme settings -> Rubikc Redirect**.
+5. Set **Redirect URL** to the Rubikc storefront, for example `store.example.com` or `https://store.example.com`.
 6. Publish the theme.
 
-Leave **Redirect URL** empty to turn the redirect off.
+Leave **Redirect URL** empty to turn the redirect off. A value without `https://` is accepted, and `https://` is added in front of it.
 
 ## What redirects
 
@@ -33,7 +33,7 @@ These templates redirect. The script is the first thing in the page, then the br
 
 Product URLs that do not already have a hash open `#content-1` on the Rubikc storefront.
 
-A hostname without `https://` is accepted. A path on the redirect URL is kept as a prefix.
+A hostname without `https://` is accepted, and `https://` is added. `http://` is kept when it is already there. A path on the redirect URL is kept as a prefix.
 
 ## What stays on this theme
 
@@ -48,17 +48,17 @@ A hostname without `https://` is accepted. A path on the redirect URL is kept as
 
 Shopify discount links still work. After Shopify sets the `discount_code` cookie, the redirect adds it as a `discount` query parameter and clears the cookie.
 
-The theme editor does not redirect, so sections stay editable.
+The theme editor and Shopify theme preview do not redirect. Content pages, including `/cart`, show the text `Rubikc Redirect: <URL>` instead of this theme. Account and the other pages that stay here still render, so those sections stay editable. The cart template still renders with `?rubikc_stay_old=1`.
 
 ## Preview this theme
 
-The theme editor does not redirect, and content templates are not built while a redirect URL is set.
+Shopify preview (the theme editor and the preview bar) shows `Rubikc Redirect: <URL>` on content pages when a redirect URL is set. Nothing is redirected. If the URL is empty, the redirect stays off and the theme renders as usual.
 
-Add `?rubikc_stay_old=1` to skip the redirect for the current browser tab. Add `?rubikc_stay_old=0` to follow it again.
+Add `?rubikc_stay_old=1` on the published theme to skip the redirect for the current browser tab. Add `?rubikc_stay_old=0` to follow it again.
 
 ## Dawn updates
 
-Account and the other pages that stay here come from Dawn. The cart template remains for the theme editor and `?rubikc_stay_old=1`. To bring in a newer Dawn, add an `upstream` remote for `https://github.com/Shopify/dawn.git` and merge `main`.
+Account and the other pages that stay here come from Dawn. The cart template remains for `?rubikc_stay_old=1`. To bring in a newer Dawn, add an `upstream` remote for `https://github.com/Shopify/dawn.git` and merge `main`.
 
 ## License
 

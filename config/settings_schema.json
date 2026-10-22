@@ -1,24 +1,24 @@
 [
   {
     "name": "theme_info",
-    "theme_name": "Rubikc",
+    "theme_name": "Rubikc Redirect",
     "theme_version": "1.0.0",
     "theme_author": "Rubikc",
     "theme_documentation_url": "https://rubikc.com",
     "theme_support_url": "https://rubikc.com"
   },
   {
-    "name": "Rubikc",
+    "name": "Rubikc Redirect",
     "settings": [
       {
         "type": "paragraph",
-        "content": "[Rubikc](https://rubikc.com) replaces browsing for the home page, products, collections, pages, blogs, search, and cart. Account, checkout, policies, and gift cards stay on this theme."
+        "content": "[Rubikc](https://rubikc.com) replaces browsing for the home page, products, collections, pages, blogs, search, and cart. Account, checkout, policies, and gift cards stay on this theme. Leave the URL empty to turn the redirect off. https:// is added when it is missing."
       },
       {
         "type": "text",
         "id": "redirect_url",
         "label": "Redirect URL",
-        "info": "Example: https://store.example.com. The current path and query string are kept."
+        "info": "Example: store.example.com. https:// is added when it is missing. The current path and query string are kept. Leave this empty to turn the redirect off."
       }
     ]
   },

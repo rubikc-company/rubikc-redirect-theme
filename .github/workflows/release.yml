@@ -49,6 +49,6 @@ jobs:
             gh release create "$tag" rubikc.zip \
               --repo "$GITHUB_REPOSITORY" \
               --target "$GITHUB_SHA" \
-              --title "Rubikc ${GITHUB_SHA::7}" \
+              --title "Rubikc Redirect ${GITHUB_SHA::7}" \
               --notes "$notes"
           fi

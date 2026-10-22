@@ -1,20 +1,27 @@
 {%- comment -%}
-  Content templates redirect to the Rubikc storefront. Account, checkout, policies, gift cards, and Shopify checkpoints stay here.
+  Content templates redirect to the Rubikc storefront, including the cart page. Account, checkout, policies, gift cards, and Shopify checkpoints stay here.
+  Shopify preview shows the target instead of navigating away.
 {%- endcomment -%}
 {%- liquid
   assign rubikc_redirect_types = '|index|product|collection|list-collections|page|blog|article|search|404|metaobject|cart|'
   assign rubikc_page_token = '|' | append: request.page_type | append: '|'
-  assign rubikc_redirect = false
-  if settings.redirect_url != blank and rubikc_redirect_types contains rubikc_page_token
-    unless request.design_mode
-      unless request.visual_preview_mode
-        assign rubikc_redirect = true
-      endunless
-    endunless
+  assign rubikc_is_content = false
+  if rubikc_redirect_types contains rubikc_page_token
+    assign rubikc_is_content = true
   endif
 
-  if settings.redirect_url != blank
-    assign rubikc_redirect_base = settings.redirect_url | strip
+  assign rubikc_shopify_preview = false
+  if request.design_mode or request.visual_preview_mode
+    assign rubikc_shopify_preview = true
+  endif
+  if content_for_header contains 'previewBarInjector' or content_for_header contains 'preview-bar'
+    assign rubikc_shopify_preview = true
+  endif
+
+  assign rubikc_redirect_base = ''
+  assign rubikc_redirect_target = settings.redirect_url | strip
+  if rubikc_redirect_target != blank
+    assign rubikc_redirect_base = rubikc_redirect_target
     assign rubikc_redirect_prefix = rubikc_redirect_base | slice: 0, 2
     if rubikc_redirect_prefix == '//'
       assign rubikc_redirect_base = 'https:' | append: rubikc_redirect_base
@@ -27,6 +34,22 @@
     if rubikc_redirect_last == '/'
       assign rubikc_redirect_base = rubikc_redirect_base | remove_last: '/'
     endif
+    assign rubikc_redirect_host = rubikc_redirect_base | split: '://' | last | split: '/' | first
+    if rubikc_redirect_host == blank
+      assign rubikc_redirect_base = ''
+    endif
+  endif
+
+  assign rubikc_redirect = false
+  if rubikc_is_content and rubikc_redirect_base != blank
+    unless rubikc_shopify_preview
+      assign rubikc_redirect = true
+    endunless
+  endif
+
+  assign rubikc_preview_text = false
+  if rubikc_is_content and rubikc_shopify_preview and rubikc_redirect_base != blank
+    assign rubikc_preview_text = true
   endif
 
   if rubikc_redirect
@@ -40,7 +63,14 @@
 <html class="js{% if rubikc_redirect %} rubikc-redirecting{% endif %}" lang="{{ request.locale.iso_code }}">
   <head>
     <meta charset="utf-8">
-    {%- if rubikc_redirect -%}
+    {%- if rubikc_preview_text -%}
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      <title>Rubikc Redirect: {{ rubikc_redirect_base | escape }}</title>
+      {{ content_for_header }}
+    </head>
+    <body>Rubikc Redirect: {{ rubikc_redirect_base | escape }}</body>
+    </html>
+    {%- elsif rubikc_redirect -%}
       {% render 'rubikc-redirect', part: 'style' %}
       {% render 'rubikc-redirect', part: 'script' %}
       <link rel="canonical" href="{{ rubikc_redirect_base | append: request.path | escape }}">
