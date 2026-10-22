@@ -1,11 +1,49 @@
+{%- comment -%}
+  Content templates redirect to the Rubikc storefront. Account, cart, policies, gift cards, and Shopify checkpoints stay here.
+{%- endcomment -%}
+{%- liquid
+  assign rubikc_redirect_types = '|index|product|collection|list-collections|page|blog|article|search|404|metaobject|'
+  assign rubikc_page_token = '|' | append: request.page_type | append: '|'
+  assign rubikc_redirect = false
+  if settings.redirect_url != blank and rubikc_redirect_types contains rubikc_page_token
+    unless request.design_mode
+      unless request.visual_preview_mode
+        assign rubikc_redirect = true
+      endunless
+    endunless
+  endif
+
+  if settings.redirect_url != blank
+    assign rubikc_redirect_base = settings.redirect_url | strip
+    assign rubikc_redirect_prefix = rubikc_redirect_base | slice: 0, 2
+    if rubikc_redirect_prefix == '//'
+      assign rubikc_redirect_base = 'https:' | append: rubikc_redirect_base
+    endif
+    unless rubikc_redirect_base contains '://'
+      assign rubikc_redirect_base = 'https://' | append: rubikc_redirect_base
+    endunless
+    assign rubikc_redirect_base = rubikc_redirect_base | split: '?' | first | split: '#' | first
+    assign rubikc_redirect_last = rubikc_redirect_base | slice: -1
+    if rubikc_redirect_last == '/'
+      assign rubikc_redirect_base = rubikc_redirect_base | remove_last: '/'
+    endif
+  endif
+-%}
 <!doctype html>
-<html class="js" lang="{{ request.locale.iso_code }}">
+<html class="js{% if rubikc_redirect %} rubikc-redirecting{% endif %}" lang="{{ request.locale.iso_code }}">
   <head>
+    {%- if rubikc_redirect -%}
+      {% render 'rubikc-redirect', part: 'style' %}
+    {%- endif -%}
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="theme-color" content="">
-    <link rel="canonical" href="{{ canonical_url }}">
+    {%- if rubikc_redirect -%}
+      <link rel="canonical" href="{{ rubikc_redirect_base | append: request.path | escape }}">
+    {%- else -%}
+      <link rel="canonical" href="{{ canonical_url }}">
+    {%- endif -%}
 
     {%- if settings.favicon != blank -%}
       <link rel="icon" type="image/png" href="{{ settings.favicon | image_url: width: 32, height: 32 }}">
@@ -64,6 +102,10 @@
     {%- endif -%}
 
     {{ content_for_header }}
+
+    {%- if rubikc_redirect -%}
+      {% render 'rubikc-redirect', part: 'script' %}
+    {%- endif -%}
 
     {%- liquid
       assign body_font_bold = settings.type_body_font | font_modify: 'weight', 'bold'
@@ -322,6 +364,9 @@
   </head>
 
   <body class="gradient{% if settings.animations_hover_elements != 'none' %} animate--hover-{{ settings.animations_hover_elements }}{% endif %}">
+    {%- if rubikc_redirect -%}
+      {% render 'rubikc-redirect', part: 'notice', fallback_base: rubikc_redirect_base %}
+    {%- endif -%}
     <a class="skip-to-content-link button visually-hidden" href="#MainContent">
       {{ 'accessibility.skip_to_text' | t }}
     </a>

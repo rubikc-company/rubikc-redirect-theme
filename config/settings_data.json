@@ -1,8 +1,9 @@
 {
-  "current": "Dawn",
+  "current": "Rubikc",
   "presets": {
-    "Dawn": {
+    "Rubikc": {
       "logo_width": 90,
+      "redirect_url": "",
       "customer_account_menu": "customer-account-main-menu",
       "color_schemes": {
         "scheme-1": {

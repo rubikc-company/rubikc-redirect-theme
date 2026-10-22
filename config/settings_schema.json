@@ -1,11 +1,26 @@
 [
   {
     "name": "theme_info",
-    "theme_name": "Dawn",
-    "theme_version": "16.0.0",
-    "theme_author": "Shopify",
-    "theme_documentation_url": "https://help.shopify.com/manual/online-store/themes",
-    "theme_support_url": "https://support.shopify.com/"
+    "theme_name": "Rubikc",
+    "theme_version": "1.0.0",
+    "theme_author": "Rubikc",
+    "theme_documentation_url": "https://rubikc.com",
+    "theme_support_url": "https://rubikc.com"
+  },
+  {
+    "name": "Rubikc",
+    "settings": [
+      {
+        "type": "paragraph",
+        "content": "[Rubikc](https://rubikc.com) replaces browsing for the home page, products, collections, pages, blogs, and search. Account, cart, checkout, policies, and gift cards stay on this theme."
+      },
+      {
+        "type": "text",
+        "id": "redirect_url",
+        "label": "Redirect URL",
+        "info": "Example: https://store.example.com. The current path and query string are kept."
+      }
+    ]
   },
   {
     "name": "t:settings_schema.logo.name",
