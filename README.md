@@ -16,7 +16,7 @@ Leave **Redirect URL** empty to turn the redirect off.
 
 ## What redirects
 
-These templates redirect. The current path, query string, and hash are kept, so `/products/hat?variant=1` on the online store becomes `/products/hat?variant=1` on the Rubikc host.
+These templates redirect. The script is the first thing in the page, then the browser stops loading this theme. The current path, query string, and hash are kept, so `/products/hat?variant=1` on the online store becomes `/products/hat?variant=1` on the Rubikc host.
 
 - Home
 - Products
@@ -48,7 +48,9 @@ The theme editor does not redirect, so sections stay editable.
 
 ## Preview this theme
 
-Add `?rubikc_stay_old=1` to stay on this theme for the current browser tab. Add `?rubikc_stay_old=0` to follow the redirect again.
+The theme editor does not redirect, and content templates are not built while a redirect URL is set.
+
+Add `?rubikc_stay_old=1` to skip the redirect for the current browser tab. Add `?rubikc_stay_old=0` to follow it again.
 
 ## Dawn updates
 

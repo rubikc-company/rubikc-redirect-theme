@@ -4,67 +4,7 @@
 {%- endcomment -%}
 
 {%- if part == 'style' -%}
-  <style>
-    html.rubikc-redirecting {
-      background: #111111;
-    }
-
-    html.rubikc-redirecting body {
-      visibility: hidden;
-    }
-
-    .rubikc-redirect {
-      display: none;
-    }
-
-    html.rubikc-redirecting .rubikc-redirect {
-      display: flex;
-      visibility: visible;
-      position: fixed;
-      inset: 0;
-      z-index: 2147483646;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      margin: 0;
-      padding: 1.5rem;
-      background: #111111;
-      color: #f7f7f7;
-      font-family: system-ui, sans-serif;
-      text-align: center;
-      text-decoration: none;
-    }
-
-    html.rubikc-redirecting .rubikc-redirect__brand {
-      display: block;
-      font-size: 1.25rem;
-      letter-spacing: 0.04em;
-    }
-
-    html.rubikc-redirecting .rubikc-redirect__status {
-      display: block;
-      margin-top: 0.35rem;
-      font-size: 0.875rem;
-      opacity: 0.72;
-    }
-  </style>
-{%- elsif part == 'notice' -%}
-  {%- liquid
-    assign rubikc_fallback_url = fallback_base | append: request.path
-    if request.page_type == 'product'
-      assign rubikc_fallback_url = rubikc_fallback_url | append: '#content-1'
-    endif
-  -%}
-  <a class="rubikc-redirect" id="rubikc-redirect-link" href="{{ rubikc_fallback_url | escape }}">
-    <span class="rubikc-redirect__brand">Rubikc</span>
-    <span class="rubikc-redirect__status">{{ 'general.rubikc_redirect.continue' | t }}</span>
-  </a>
-  <script>
-    if (window.rubikcRedirectUrl) {
-      var rubikcRedirectLink = document.getElementById('rubikc-redirect-link');
-      if (rubikcRedirectLink) rubikcRedirectLink.href = window.rubikcRedirectUrl;
-    }
-  </script>
+  <style>html.rubikc-redirecting{visibility:hidden}</style>
 {%- elsif part == 'script' -%}
   <script>
     /* @rubikc-redirect */
@@ -244,7 +184,6 @@
         document.cookie = 'discount_code=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT; SameSite=Lax';
       }
 
-      window.rubikcRedirectUrl = decision.url;
       window.location.replace(decision.url);
     })();
   </script>

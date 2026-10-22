@@ -28,22 +28,32 @@
       assign rubikc_redirect_base = rubikc_redirect_base | remove_last: '/'
     endif
   endif
+
+  if rubikc_redirect
+    assign rubikc_noscript_url = rubikc_redirect_base | append: request.path
+    if request.page_type == 'product'
+      assign rubikc_noscript_url = rubikc_noscript_url | append: '#content-1'
+    endif
+  endif
 -%}
 <!doctype html>
 <html class="js{% if rubikc_redirect %} rubikc-redirecting{% endif %}" lang="{{ request.locale.iso_code }}">
   <head>
+    <meta charset="utf-8">
     {%- if rubikc_redirect -%}
       {% render 'rubikc-redirect', part: 'style' %}
-    {%- endif -%}
-    <meta charset="utf-8">
+      {% render 'rubikc-redirect', part: 'script' %}
+      <link rel="canonical" href="{{ rubikc_redirect_base | append: request.path | escape }}">
+      <title>{{ page_title | escape }}</title>
+      <noscript><meta http-equiv="refresh" content="0;url={{ rubikc_noscript_url | escape }}"></noscript>
+    </head>
+    <body></body>
+    </html>
+    {%- else -%}
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="theme-color" content="">
-    {%- if rubikc_redirect -%}
-      <link rel="canonical" href="{{ rubikc_redirect_base | append: request.path | escape }}">
-    {%- else -%}
-      <link rel="canonical" href="{{ canonical_url }}">
-    {%- endif -%}
+    <link rel="canonical" href="{{ canonical_url }}">
 
     {%- if settings.favicon != blank -%}
       <link rel="icon" type="image/png" href="{{ settings.favicon | image_url: width: 32, height: 32 }}">
@@ -102,10 +112,6 @@
     {%- endif -%}
 
     {{ content_for_header }}
-
-    {%- if rubikc_redirect -%}
-      {% render 'rubikc-redirect', part: 'script' %}
-    {%- endif -%}
 
     {%- liquid
       assign body_font_bold = settings.type_body_font | font_modify: 'weight', 'bold'
@@ -364,9 +370,6 @@
   </head>
 
   <body class="gradient{% if settings.animations_hover_elements != 'none' %} animate--hover-{{ settings.animations_hover_elements }}{% endif %}">
-    {%- if rubikc_redirect -%}
-      {% render 'rubikc-redirect', part: 'notice', fallback_base: rubikc_redirect_base %}
-    {%- endif -%}
     <a class="skip-to-content-link button visually-hidden" href="#MainContent">
       {{ 'accessibility.skip_to_text' | t }}
     </a>
@@ -448,3 +451,4 @@
     {%- endif -%}
   </body>
 </html>
+    {%- endif -%}

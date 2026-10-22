@@ -29,9 +29,6 @@
       }
     },
     "continue_shopping": "Continue shopping",
-    "rubikc_redirect": {
-      "continue": "Continue"
-    },
     "pagination": {
       "label": "Pagination",
       "page": "Page {{ number }}",
