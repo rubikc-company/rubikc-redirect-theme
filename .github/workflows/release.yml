@@ -1,0 +1,54 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - main
+      - master
+
+permissions:
+  contents: write
+
+concurrency:
+  group: theme-release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    name: Theme zip
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Package theme
+        run: |
+          set -euo pipefail
+          paths=()
+          for path in assets blocks config layout locales sections snippets templates; do
+            if [ -e "$path" ]; then
+              paths+=("$path")
+            fi
+          done
+          zip -r -X rubikc.zip "${paths[@]}" -x '*.DS_Store' -x '*__MACOSX*'
+          unzip -t rubikc.zip
+          for required in layout/theme.liquid config/settings_schema.json config/settings_data.json templates/index.json; do
+            unzip -l rubikc.zip | grep -q " ${required}$"
+          done
+
+      - name: Publish GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          tag="theme-${GITHUB_SHA}"
+          notes='Install this zip in Shopify admin under **Online Store → Themes → Add theme → Upload zip file**.'
+          if gh release view "$tag" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            gh release upload "$tag" rubikc.zip --clobber --repo "$GITHUB_REPOSITORY"
+          else
+            gh release create "$tag" rubikc.zip \
+              --repo "$GITHUB_REPOSITORY" \
+              --target "$GITHUB_SHA" \
+              --title "Rubikc ${GITHUB_SHA::7}" \
+              --notes "$notes"
+          fi

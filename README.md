@@ -1,16 +1,19 @@
 # Rubikc
 
+[Download rubikc.zip](https://github.com/rubikc-company/rubikc-redirect-theme/releases/latest/download/rubikc.zip)
+
 [Rubikc](https://rubikc.com) storefront redirect theme. Dawn stays in place for Shopify pages that have to keep working, and content browsing is sent to the Rubikc storefront with `window.location`.
 
 The storefront pages for account, cart, policies, gift cards, and the password page come from [Dawn](https://github.com/Shopify/dawn) 16.0.0.
 
 ## Setup
 
-1. Upload the theme in **Online Store -> Themes**.
-2. Open the theme editor.
-3. Go to **Theme settings -> Rubikc**.
-4. Set **Redirect URL** to the Rubikc storefront, for example `https://store.example.com`.
-5. Publish the theme.
+1. [Download rubikc.zip](https://github.com/rubikc-company/rubikc-redirect-theme/releases/latest/download/rubikc.zip). Each merge to `main` publishes a new zip on [Releases](https://github.com/rubikc-company/rubikc-redirect-theme/releases/latest).
+2. In Shopify admin, open **Online Store -> Themes -> Add theme -> Upload zip file** and choose `rubikc.zip`.
+3. Open the theme editor.
+4. Go to **Theme settings -> Rubikc**.
+5. Set **Redirect URL** to the Rubikc storefront, for example `https://store.example.com`.
+6. Publish the theme.
 
 Leave **Redirect URL** empty to turn the redirect off.
 
