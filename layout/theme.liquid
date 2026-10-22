@@ -1,8 +1,8 @@
 {%- comment -%}
-  Content templates redirect to the Rubikc storefront. Account, cart, policies, gift cards, and Shopify checkpoints stay here.
+  Content templates redirect to the Rubikc storefront. Account, checkout, policies, gift cards, and Shopify checkpoints stay here.
 {%- endcomment -%}
 {%- liquid
-  assign rubikc_redirect_types = '|index|product|collection|list-collections|page|blog|article|search|404|metaobject|'
+  assign rubikc_redirect_types = '|index|product|collection|list-collections|page|blog|article|search|404|metaobject|cart|'
   assign rubikc_page_token = '|' | append: request.page_type | append: '|'
   assign rubikc_redirect = false
   if settings.redirect_url != blank and rubikc_redirect_types contains rubikc_page_token
