@@ -1,0 +1,35 @@
+<div class="rubikc-policy">
+  <h1 class="rubikc-policy__title">{{ policy.title | escape }}</h1>
+  <div class="rubikc-policy__body rte">
+    {{ policy.body }}
+  </div>
+</div>
+
+{% style %}
+  .rubikc-policy {
+    max-width: 72rem;
+    margin: 0 auto;
+    padding: 3.2rem 2rem 6.4rem;
+  }
+
+  .rubikc-policy__title {
+    margin: 0 0 2rem;
+    font-size: 2.4rem;
+    line-height: 1.3;
+    font-weight: 600;
+  }
+
+  .rubikc-policy__body {
+    font-size: 1.6rem;
+    line-height: 1.6;
+  }
+{% endstyle %}
+
+{% schema %}
+{
+  "name": "Policy",
+  "tag": "section",
+  "class": "rubikc-policy-section",
+  "settings": []
+}
+{% endschema %}
