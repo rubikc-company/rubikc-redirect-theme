@@ -1,0 +1,61 @@
+{%- liquid
+  assign rubikc_header_url = settings.redirect_url | strip
+  if rubikc_header_url != blank
+    assign rubikc_header_prefix = rubikc_header_url | slice: 0, 2
+    if rubikc_header_prefix == '//'
+      assign rubikc_header_url = 'https:' | append: rubikc_header_url
+    endif
+    unless rubikc_header_url contains '://'
+      assign rubikc_header_url = 'https://' | append: rubikc_header_url
+    endunless
+    assign rubikc_header_url = rubikc_header_url | split: '?' | first | split: '#' | first
+    assign rubikc_header_last = rubikc_header_url | slice: -1
+    if rubikc_header_last == '/'
+      assign rubikc_header_url = rubikc_header_url | remove_last: '/'
+    endif
+    assign rubikc_header_host = rubikc_header_url | split: '://' | last | split: '/' | first
+    if rubikc_header_host == blank
+      assign rubikc_header_url = routes.root_url
+    endif
+  else
+    assign rubikc_header_url = routes.root_url
+  endif
+-%}
+
+<header class="rubikc-header">
+  <a class="rubikc-header__link" href="{{ rubikc_header_url }}">{{ shop.name | escape }}</a>
+</header>
+
+{% style %}
+  .rubikc-header {
+    background: rgb(var(--color-background));
+    color: rgb(var(--color-foreground));
+    padding: 1.6rem 2rem;
+    border-bottom: 0.1rem solid rgba(var(--color-foreground), 0.12);
+  }
+
+  .rubikc-header__link {
+    color: inherit;
+    font-size: 1.6rem;
+    line-height: 1.4;
+    text-decoration: none;
+  }
+
+  .rubikc-header__link:hover,
+  .rubikc-header__link:focus {
+    text-decoration: underline;
+  }
+{% endstyle %}
+
+{% schema %}
+{
+  "name": "Header",
+  "class": "rubikc-header-section",
+  "settings": [
+    {
+      "type": "paragraph",
+      "content": "Shows the store name and links to the Redirect URL in Theme settings. Leave that URL empty to link to this store's home page."
+    }
+  ]
+}
+{% endschema %}

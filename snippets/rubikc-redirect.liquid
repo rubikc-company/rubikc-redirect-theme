@@ -1,6 +1,7 @@
 {%- comment -%}
   Content pages redirect to the Rubikc storefront URL.
-  The cart page redirects too. Account, checkout, policies, gift cards, and Shopify checkpoints stay on this theme.
+  The cart page redirects too. Policy pages redirect only when that setting is on.
+  Account, checkout, gift cards, and Shopify checkpoints stay on this theme.
 {%- endcomment -%}
 
 {%- if part == 'style' -%}
@@ -46,7 +47,7 @@
       return segments.length === 1 && segments[0] === 'cart';
     }
 
-    function rubikcIsEssentialPath(pathname) {
+    function rubikcIsEssentialPath(pathname, redirectPolicies) {
       var segment = rubikcPathSegments(pathname)[0] || '';
       var essential = {
         account: true,
@@ -60,9 +61,12 @@
         community: true,
         tools: true,
         discount: true,
-        policies: true,
         gift_cards: true
       };
+
+      if (segment === 'policies') {
+        return !redirectPolicies;
+      }
 
       if (segment === 'cart') {
         return !rubikcIsCartPage(pathname);
@@ -133,7 +137,7 @@
         };
       }
 
-      if (rubikcIsEssentialPath(input.pathname)) {
+      if (rubikcIsEssentialPath(input.pathname, !!input.redirectPolicies)) {
         return { redirect: false, clearStay: clearStay };
       }
 
@@ -188,6 +192,7 @@
       try {
         decision = rubikcResolveRedirect({
           redirectTarget: {{ settings.redirect_url | json }},
+          redirectPolicies: {{ settings.redirect_policies | json }},
           pathname: window.location.pathname,
           search: window.location.search,
           hash: window.location.hash,
