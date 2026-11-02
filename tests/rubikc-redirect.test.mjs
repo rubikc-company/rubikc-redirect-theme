@@ -18,6 +18,7 @@ function resolve(overrides) {
     cookie: '',
     designMode: false,
     stayStored: false,
+    redirectPolicies: false,
     ...overrides,
   });
 }
@@ -91,6 +92,20 @@ test('does not redirect essential Shopify routes', () => {
   }
 });
 
+test('redirects policy pages only when that setting is on', () => {
+  assert.equal(resolve({ pathname: '/policies/privacy-policy' }).redirect, false);
+  assert.equal(resolve({ pathname: '/en/policies/terms-of-service' }).redirect, false);
+
+  assert.equal(
+    resolve({ pathname: '/policies/privacy-policy', redirectPolicies: true }).url,
+    'https://an.customers.rubikc.com/policies/privacy-policy'
+  );
+  assert.equal(
+    resolve({ pathname: '/fr/policies/refund-policy', redirectPolicies: true }).url,
+    'https://an.customers.rubikc.com/fr/policies/refund-policy'
+  );
+});
+
 test('does not redirect when the host already matches', () => {
   assert.equal(
     resolve({ hostname: 'an.customers.rubikc.com', pathname: '/products/hat' }).redirect,
@@ -151,6 +166,26 @@ test('names the theme Rubikc Redirect and previews the target as text', () => {
   assert.match(layout, /<body>Rubikc Redirect: \{\{ rubikc_redirect_base \| escape \}\}<\/body>/);
   assert.match(layout, /rubikc_redirect_target != blank/);
   assert.match(layout, /unless rubikc_redirect_base contains '\:\/\/'/);
+  assert.match(schema, /"id": "redirect_policies"/);
+  assert.equal(JSON.parse(data).presets['Rubikc Redirect'].redirect_policies, false);
+  assert.match(layout, /settings\.redirect_policies/);
+  assert.match(layout, /append: 'policy\|'/);
+  assert.match(source, /redirectPolicies: \{\{ settings\.redirect_policies \| json \}\}/);
+  assert.doesNotMatch(layout, /sections 'footer-group'/);
+
+  const headerGroup = JSON.parse(
+    fs.readFileSync(new URL('../sections/header-group.json', import.meta.url), 'utf8')
+  );
+  const header = fs.readFileSync(new URL('../sections/rubikc-header.liquid', import.meta.url), 'utf8');
+  const policyTemplate = JSON.parse(
+    fs.readFileSync(new URL('../templates/policy.json', import.meta.url), 'utf8')
+  );
+
+  assert.deepEqual(headerGroup.order, ['header']);
+  assert.equal(headerGroup.sections.header.type, 'rubikc-header');
+  assert.match(header, /shop\.name \| escape/);
+  assert.match(header, /settings\.redirect_url/);
+  assert.equal(policyTemplate.sections.main.type, 'main-policy');
 });
 
 test('stays on this theme for the tab when requested', () => {

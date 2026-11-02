@@ -4,6 +4,7 @@
     "Rubikc Redirect": {
       "logo_width": 90,
       "redirect_url": "",
+      "redirect_policies": false,
       "customer_account_menu": "customer-account-main-menu",
       "color_schemes": {
         "scheme-1": {

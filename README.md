@@ -4,7 +4,7 @@
 
 [Rubikc](https://rubikc.com) storefront redirect theme. Dawn stays in place for Shopify pages that have to keep working, and content browsing is sent to the Rubikc storefront with `window.location`.
 
-The storefront pages for account, policies, gift cards, and the password page come from [Dawn](https://github.com/Shopify/dawn) 16.0.0. The cart template is still Dawn, and `/cart` redirects to Rubikc.
+The storefront pages for account, gift cards, and the password page come from [Dawn](https://github.com/Shopify/dawn) 16.0.0. Policy pages use a plain template on this theme unless **Redirect policy pages** is on. The cart template is still Dawn, and `/cart` redirects to Rubikc.
 
 ## Setup
 
@@ -13,9 +13,10 @@ The storefront pages for account, policies, gift cards, and the password page co
 3. Open the theme editor.
 4. Go to **Theme settings -> Rubikc Redirect**.
 5. Set **Redirect URL** to the Rubikc storefront, for example `store.example.com` or `https://store.example.com`.
-6. Publish the theme.
+6. Leave **Redirect policy pages** off to show privacy, terms, and the other policy pages on this theme. Turn it on to send those pages to the redirect URL as well.
+7. Publish the theme.
 
-Leave **Redirect URL** empty to turn the redirect off. A value without `https://` is accepted, and `https://` is added in front of it.
+Leave **Redirect URL** empty to turn the redirect off. A value without `https://` is accepted, and `https://` is added in front of it. Pages that stay on this theme use a plain header. The store name links to the redirect URL, or to this store's home page when that URL is empty.
 
 ## What redirects
 
@@ -30,6 +31,7 @@ These templates redirect. The script is the first thing in the page, then the br
 - Metaobjects
 - Cart (`/cart`, including localized paths such as `/en/cart`)
 - 404
+- Policy pages (`/policies/privacy-policy` and the other policy URLs), only when **Redirect policy pages** is turned on
 
 Product URLs that do not already have a hash open `#content-1` on the Rubikc storefront.
 
@@ -40,7 +42,7 @@ A hostname without `https://` is accepted, and `https://` is added. `http://` is
 - Customer account, including the account menu
 - Cart changes (`/cart/add`, `/cart/change`, `/cart/update`)
 - Checkout, which Shopify hosts outside the theme
-- Policy pages
+- Policy pages, unless **Redirect policy pages** is turned on. Those pages use a plain header and the policy text
 - Gift cards
 - The password page
 - Bot protection (`/checkpoint`, `/challenge`, `/throttle/queue`)
@@ -52,7 +54,7 @@ The theme editor and Shopify theme preview do not redirect. Content pages, inclu
 
 ## Preview this theme
 
-Shopify preview (the theme editor and the preview bar) shows `Rubikc Redirect: <URL>` on content pages when a redirect URL is set. Nothing is redirected. If the URL is empty, the redirect stays off and the theme renders as usual.
+Shopify preview (the theme editor and the preview bar) shows `Rubikc Redirect: <URL>` on content pages when a redirect URL is set. Nothing is redirected. If the URL is empty, the redirect stays off and pages render with the plain header.
 
 Add `?rubikc_stay_old=1` on the published theme to skip the redirect for the current browser tab. Add `?rubikc_stay_old=0` to follow it again.
 

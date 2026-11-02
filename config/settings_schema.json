@@ -12,13 +12,20 @@
     "settings": [
       {
         "type": "paragraph",
-        "content": "[Rubikc](https://rubikc.com) replaces browsing for the home page, products, collections, pages, blogs, search, and cart. Account, checkout, policies, and gift cards stay on this theme. Leave the URL empty to turn the redirect off. https:// is added when it is missing."
+        "content": "[Rubikc](https://rubikc.com) replaces browsing for the home page, products, collections, pages, blogs, search, and cart. Account, checkout, and gift cards stay on this theme. Policy pages stay here unless Redirect policy pages is turned on. Leave the URL empty to turn the redirect off. https:// is added when it is missing. Pages that stay use a plain header. The store name links to this URL."
       },
       {
         "type": "text",
         "id": "redirect_url",
         "label": "Redirect URL",
-        "info": "Example: store.example.com. https:// is added when it is missing. The current path and query string are kept. Leave this empty to turn the redirect off."
+        "info": "Example: store.example.com. https:// is added when it is missing. The current path and query string are kept. Leave this empty to turn the redirect off. The header on pages that stay links here."
+      },
+      {
+        "type": "checkbox",
+        "id": "redirect_policies",
+        "label": "Redirect policy pages",
+        "info": "Send policy pages, such as privacy and terms, to the redirect URL. Leave this off to show them on this theme.",
+        "default": false
       }
     ]
   },
