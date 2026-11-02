@@ -31,6 +31,8 @@ These templates redirect. The script is the first thing in the page, then the br
 - Cart (`/cart`, including localized paths such as `/en/cart`)
 - 404
 
+Shopify Buy again links, and other cart permalinks such as `/cart/variant:quantity`, are handled by Shopify before this theme runs. Shopify redirects them to `/cart?cart_link_id=…` and keeps the products in the Shopify cart. The Rubikc storefront cannot reload those products from `cart_link_id`. On that cart page, this theme reads the cart and redirects to `/cart/variant:quantity` on the Rubikc host. Country, cart attributes, the cart note, discount codes, and the first line’s properties are kept. The storefront adds those products and opens the cart.
+
 Product URLs that do not already have a hash open `#content-1` on the Rubikc storefront.
 
 A hostname without `https://` is accepted, and `https://` is added. `http://` is kept when it is already there. A path on the redirect URL is kept as a prefix.
