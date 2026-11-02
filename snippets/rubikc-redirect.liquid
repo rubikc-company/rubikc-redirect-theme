@@ -2,6 +2,7 @@
   Content pages redirect to the Rubikc storefront URL.
   The cart page redirects too. Policy pages redirect only when that setting is on.
   Account, checkout, gift cards, and Shopify checkpoints stay on this theme.
+  Shopify cart permalinks arrive as /cart?cart_link_id=… The storefront cannot reload products from that id, so the cart page reads the Shopify cart and continues to /cart/variant:quantity.
 {%- endcomment -%}
 
 {%- if part == 'style' -%}
@@ -174,7 +175,173 @@
         clearStay: clearStay
       };
     }
+
+    function rubikcShouldRecoverCartLink(pathname, search) {
+      if (!rubikcIsCartPage(pathname)) return false;
+
+      var params = new URLSearchParams(String(search || '').replace(/^\?/, ''));
+      return !!params.get('cart_link_id');
+    }
+
+    function rubikcCartPermalinkToken(items) {
+      if (!items || !items.length) return '';
+
+      var parts = [];
+
+      for (var i = 0; i < items.length && parts.length < 50; i++) {
+        var item = items[i] || {};
+        var id = String(item.variant_id || item.id || '');
+        var quantity = parseInt(item.quantity, 10);
+
+        if (!/^\d{1,20}$/.test(id)) continue;
+        if (!isFinite(quantity) || quantity < 1) continue;
+        if (quantity > 10000) quantity = 10000;
+
+        parts.push(id + ':' + quantity);
+      }
+
+      return parts.join(',');
+    }
+
+    function rubikcEncodeBase64Url(value) {
+      try {
+        return btoa(unescape(encodeURIComponent(value)))
+          .replace(/\+/g, '-')
+          .replace(/\//g, '_')
+          .replace(/=+$/g, '');
+      } catch (error) {
+        return '';
+      }
+    }
+
+    function rubikcEncodeLineProperties(properties) {
+      if (!properties || typeof properties !== 'object') return '';
+
+      var encoded = {};
+      var count = 0;
+      var entries = Array.isArray(properties) ? properties : Object.keys(properties);
+
+      for (var i = 0; i < entries.length && count < 25; i++) {
+        var key = '';
+        var value;
+
+        if (Array.isArray(properties)) {
+          var property = entries[i] || {};
+          key = String(property.name || property.key || '').trim();
+          value = property.value;
+        } else {
+          key = String(entries[i] || '').trim();
+          value = properties[entries[i]];
+        }
+
+        if (!key || /[[\]\r\n]/.test(key) || value == null || value === '') continue;
+        if (typeof value === 'object') continue;
+
+        encoded[key] = String(value);
+        count++;
+      }
+
+      if (!count) return '';
+
+      var token = rubikcEncodeBase64Url(JSON.stringify(encoded));
+      if (!token || token.length > 2000) return '';
+
+      return token;
+    }
+
+    function rubikcRecoverCartLinkUrl(url, cart) {
+      var token = rubikcCartPermalinkToken(cart && cart.items);
+      if (!token) return url;
+
+      var destination;
+
+      try {
+        destination = new URL(url);
+      } catch (error) {
+        return url;
+      }
+
+      if (!destination.searchParams.get('cart_link_id')) return url;
+
+      var pathMatch = destination.pathname.match(/^(.*)\/cart\/?$/);
+      if (!pathMatch) return url;
+
+      destination.pathname = pathMatch[1] + '/cart/' + token;
+      destination.searchParams.delete('cart_link_id');
+
+      var attributes = cart.attributes || {};
+      var attributeNames = Object.keys(attributes);
+      var addedAttributes = 0;
+
+      for (var i = 0; i < attributeNames.length && addedAttributes < 25; i++) {
+        var name = String(attributeNames[i] || '').trim();
+        var attributeValue = attributes[attributeNames[i]];
+
+        if (!name || /[[\]\r\n]/.test(name) || attributeValue == null || attributeValue === '') continue;
+
+        var paramName = 'attributes[' + name + ']';
+        if (destination.searchParams.has(paramName)) continue;
+
+        destination.searchParams.append(paramName, String(attributeValue));
+        addedAttributes++;
+      }
+
+      if (cart.note && !destination.searchParams.has('note')) {
+        var note = String(cart.note);
+        if (note.length <= 5000) destination.searchParams.append('note', note);
+      }
+
+      if (!destination.searchParams.has('discount') && cart.discount_codes && cart.discount_codes.length) {
+        var codes = [];
+
+        for (var d = 0; d < cart.discount_codes.length && codes.length < 10; d++) {
+          var discount = cart.discount_codes[d];
+          var code = discount && typeof discount === 'object' ? discount.code : discount;
+
+          if (discount && discount.applicable === false) continue;
+          if (!code) continue;
+
+          codes.push(String(code));
+        }
+
+        if (codes.length) destination.searchParams.append('discount', codes.join(','));
+      }
+
+      if (!destination.searchParams.has('properties') && cart.items && cart.items[0]) {
+        var properties = rubikcEncodeLineProperties(cart.items[0].properties);
+        if (properties) destination.searchParams.append('properties', properties);
+      }
+
+      return destination.toString();
+    }
     /* @rubikc-redirect-end */
+
+    var rubikcShopifyCart = {%- if request.page_type == 'cart' -%}
+      {
+        "note": {{ cart.note | json }},
+        "attributes": {{ cart.attributes | json }},
+        "items": [
+          {%- for item in cart.items -%}
+            {
+              "variant_id": {{ item.variant_id | json }},
+              "quantity": {{ item.quantity | json }},
+              "properties": {{ item.properties | json }}
+            }{%- unless forloop.last -%},{%- endunless -%}
+          {%- endfor -%}
+        ],
+        "discount_codes": [
+          {%- assign rubikc_discount_sep = '' -%}
+          {%- for discount in cart.discount_applications -%}
+            {%- if discount.type == 'discount_code' -%}
+              {{ rubikc_discount_sep }}{"code": {{ discount.title | json }}}
+              {%- assign rubikc_discount_sep = ',' -%}
+            {%- endif -%}
+          {%- endfor -%}
+        ]
+      }
+    {%- else -%}
+      null
+    {%- endif -%};
 
     (function () {
       function reveal() {
@@ -229,11 +396,60 @@
         return;
       }
 
-      if (decision.clearDiscountCookie) {
-        document.cookie = 'discount_code=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT; SameSite=Lax';
+      function leave(next) {
+        if (next.clearDiscountCookie) {
+          document.cookie = 'discount_code=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT; SameSite=Lax';
+        }
+
+        window.location.replace(next.url);
       }
 
-      window.location.replace(decision.url);
+      if (!decision.redirect || !rubikcShouldRecoverCartLink(window.location.pathname, window.location.search)) {
+        leave(decision);
+        return;
+      }
+
+      var finished = false;
+
+      function finish(cart) {
+        if (finished) return;
+        finished = true;
+
+        var recovered = decision.url;
+
+        try {
+          recovered = rubikcRecoverCartLinkUrl(decision.url, cart);
+          if (recovered === decision.url) recovered = rubikcRecoverCartLinkUrl(decision.url, rubikcShopifyCart);
+        } catch (error) {
+          recovered = decision.url;
+        }
+
+        leave({
+          url: recovered,
+          clearDiscountCookie: decision.clearDiscountCookie
+        });
+      }
+
+      var timer = setTimeout(function () {
+        finish(null);
+      }, 3000);
+
+      fetch('/cart.js' + (window.location.search || ''), {
+        credentials: 'same-origin',
+        headers: { Accept: 'application/json' },
+        cache: 'no-store'
+      })
+        .then(function (response) {
+          return response && response.ok ? response.json() : null;
+        })
+        .then(function (cart) {
+          clearTimeout(timer);
+          finish(cart);
+        })
+        .catch(function () {
+          clearTimeout(timer);
+          finish(null);
+        });
     })();
   </script>
 {%- endif -%}

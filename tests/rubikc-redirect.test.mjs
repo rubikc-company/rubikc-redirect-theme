@@ -6,7 +6,9 @@ const source = fs.readFileSync(new URL('../snippets/rubikc-redirect.liquid', imp
 const match = source.match(/\/\* @rubikc-redirect \*\/([\s\S]*?)\/\* @rubikc-redirect-end \*\//);
 assert.ok(match, 'redirect helpers should be marked in the snippet');
 
-const rubikcResolveRedirect = new Function(`${match[1]}\nreturn rubikcResolveRedirect;`)();
+const { rubikcResolveRedirect, rubikcRecoverCartLinkUrl, rubikcShouldRecoverCartLink } = new Function(
+  `${match[1]}\nreturn { rubikcResolveRedirect, rubikcRecoverCartLinkUrl, rubikcShouldRecoverCartLink };`,
+)();
 
 function resolve(overrides) {
   return rubikcResolveRedirect({
@@ -191,4 +193,65 @@ test('names the theme Rubikc Redirect and previews the target as text', () => {
 test('stays on this theme for the tab when requested', () => {
   assert.equal(resolve({ search: '?rubikc_stay_old=1' }).redirect, false);
   assert.equal(resolve({ stayStored: true, pathname: '/products/hat' }).redirect, false);
+});
+
+test('recovers a Shopify cart permalink into variant quantities', () => {
+  const decision = resolve({
+    pathname: '/cart',
+    search: '?cart_link_id=ZEhQAone&country=US',
+  });
+  const recovered = new URL(
+    rubikcRecoverCartLinkUrl(decision.url, {
+      note: 'Gift wrap',
+      attributes: { from: 'new-customer-accounts' },
+      discount_codes: [{ code: 'SAVE10', applicable: true }, { code: 'OLD', applicable: false }],
+      items: [
+        {
+          variant_id: 67783101579493,
+          quantity: 1,
+          properties: { Engraving: 'Hi' },
+        },
+        { id: 70881412, quantity: 2, properties: {} },
+      ],
+    }),
+  );
+
+  assert.equal(rubikcShouldRecoverCartLink('/cart', '?cart_link_id=ZEhQAone&country=US'), true);
+  assert.equal(recovered.origin + recovered.pathname, 'https://an.customers.rubikc.com/cart/67783101579493:1,70881412:2');
+  assert.equal(recovered.searchParams.get('country'), 'US');
+  assert.equal(recovered.searchParams.get('cart_link_id'), null);
+  assert.equal(recovered.searchParams.get('attributes[from]'), 'new-customer-accounts');
+  assert.equal(recovered.searchParams.get('note'), 'Gift wrap');
+  assert.equal(recovered.searchParams.get('discount'), 'SAVE10');
+
+  const properties = recovered.searchParams.get('properties');
+  const padded = properties.replace(/-/g, '+').replace(/_/g, '/').padEnd(Math.ceil(properties.length / 4) * 4, '=');
+  assert.deepEqual(JSON.parse(Buffer.from(padded, 'base64').toString('utf8')), { Engraving: 'Hi' });
+});
+
+test('keeps the locale and base path when recovering a cart link', () => {
+  const decision = resolve({
+    redirectTarget: 'an.customers.rubikc.com/preview/',
+    pathname: '/fr-CA/cart/',
+    search: '?cart_link_id=abc',
+  });
+  const recovered = rubikcRecoverCartLinkUrl(decision.url, {
+    items: [{ variant_id: '5', quantity: 10001 }],
+  });
+
+  assert.equal(recovered, 'https://an.customers.rubikc.com/preview/fr-CA/cart/5:10000');
+});
+
+test('leaves the cart link unchanged when the Shopify cart has no lines', () => {
+  const decision = resolve({
+    pathname: '/en/cart',
+    search: '?cart_link_id=abc&country=US',
+  });
+
+  assert.equal(rubikcRecoverCartLinkUrl(decision.url, { items: [] }), decision.url);
+  assert.equal(rubikcRecoverCartLinkUrl(decision.url, null), decision.url);
+  assert.equal(rubikcShouldRecoverCartLink('/products/hat', '?cart_link_id=abc'), false);
+  assert.equal(rubikcShouldRecoverCartLink('/cart', '?cart_link_id='), false);
+  assert.match(source, /fetch\('\/cart\.js'/);
+  assert.match(source, /rubikcShopifyCart/);
 });
