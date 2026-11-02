@@ -1,9 +1,14 @@
 {%- comment -%}
-  Content templates redirect to the Rubikc storefront, including the cart page. Account, checkout, policies, gift cards, and Shopify checkpoints stay here.
+  Content templates redirect to the Rubikc storefront, including the cart page.
+  Policy pages redirect only when that setting is on. Account, checkout, gift cards, and Shopify checkpoints stay here.
+  Pages that stay use a plain header that links to the configured site.
   Shopify preview shows the target instead of navigating away.
 {%- endcomment -%}
 {%- liquid
   assign rubikc_redirect_types = '|index|product|collection|list-collections|page|blog|article|search|404|metaobject|cart|'
+  if settings.redirect_policies
+    assign rubikc_redirect_types = rubikc_redirect_types | append: 'policy|'
+  endif
   assign rubikc_page_token = '|' | append: request.page_type | append: '|'
   assign rubikc_is_content = false
   if rubikc_redirect_types contains rubikc_page_token
@@ -419,8 +424,6 @@
     >
       {{ content_for_layout }}
     </main>
-
-    {% sections 'footer-group' %}
 
     <ul hidden>
       <li id="a11y-refresh-page-message">{{ 'accessibility.refresh_page' | t }}</li>
